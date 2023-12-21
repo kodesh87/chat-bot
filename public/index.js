@@ -3,8 +3,6 @@ document.addEventListener('submit', (e) => {
     progressConversation()
 })
 
-const openAIApiKey = process.env.OPENAI_API_KEY
-
 async function progressConversation() {
     const userInput = document.getElementById('user-input')
     const chatbotConversation = document.getElementById('chatbot-conversation-container')
@@ -18,10 +16,24 @@ async function progressConversation() {
     newHumanSpeechBubble.textContent = question
     chatbotConversation.scrollTop = chatbotConversation.scrollHeight
 
-    // add AI message
-    const newAiSpeechBubble = document.createElement('div')
-    newAiSpeechBubble.classList.add('speech', 'speech-ai')
-    chatbotConversation.appendChild(newAiSpeechBubble)
-    newAiSpeechBubble.textContent = result
-    chatbotConversation.scrollTop = chatbotConversation.scrollHeight
+    axios.post(`/api/chat`, { question: question})
+    .then(response => {
+        // add AI message
+        const newAiSpeechBubble = document.createElement('div')
+        newAiSpeechBubble.classList.add('speech', 'speech-ai')
+        chatbotConversation.appendChild(newAiSpeechBubble)
+        console.log(response)
+        newAiSpeechBubble.textContent = response.data.data.answer
+        chatbotConversation.scrollTop = chatbotConversation.scrollHeight
+    })
+    .catch(error => {
+        // add AI message
+        const newAiSpeechBubble = document.createElement('div')
+        newAiSpeechBubble.classList.add('speech', 'speech-ai')
+        chatbotConversation.appendChild(newAiSpeechBubble)
+        newAiSpeechBubble.textContent = "Error, please try again!"
+        chatbotConversation.scrollTop = chatbotConversation.scrollHeight
+    });
+
+
 }
