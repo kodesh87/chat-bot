@@ -1,8 +1,8 @@
 import { ChatOpenAI } from 'langchain/chat_models/openai'
 import { PromptTemplate } from 'langchain/prompts'
 import { StringOutputParser } from 'langchain/schema/output_parser'
-import { retriever } from './utils/retriever.js';
-import { combineDocuments } from './utils/document.js';
+import { retriever } from '../utils/retriever.js';
+import { combineDocuments } from '../utils/document.js';
 import dotenv from 'dotenv';
 
 dotenv.config();

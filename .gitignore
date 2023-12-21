@@ -131,5 +131,9 @@ dist
 
 # custom
 faq.txt
+faq-sample.txt
 package-lock.json
 .env
+faq-enhanced.txt
+faq-enhancement.js
+faq-unprocessed.txt
