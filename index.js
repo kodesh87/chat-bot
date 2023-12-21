@@ -1,5 +1,8 @@
-import { ChatOpenAI } from "langchain/chat_models/openai";
-import { PromptTemplate } from "langchain/prompts";
+import { ChatOpenAI } from 'langchain/chat_models/openai'
+import { PromptTemplate } from 'langchain/prompts'
+import { StringOutputParser } from 'langchain/schema/output_parser'
+import { retriever } from './utils/retriever.js';
+import { combineDocuments } from './utils/document.js';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -7,36 +10,50 @@ dotenv.config();
 // document.addEventListener('submit', (e) => {
 //     e.preventDefault()
 //     progressConversation()
-// })
+// }) 
 
-const openAIApiKey = process.env.OPENAI_API_KEY;
-const llm = new ChatOpenAI({ openAIApiKey });
+const openAIApiKey = process.env.OPENAI_API_KEY
+const llm = new ChatOpenAI({ openAIApiKey })
+
+const standaloneQuestionTemplate = 'Given a question, convert it to a standalone question. question: {question} standalone question:'
+const standaloneQuestionPrompt = PromptTemplate.fromTemplate(standaloneQuestionTemplate)
+
+const answerTemplate = `You are a helpful and enthusiastic support bot who can answer a given
+question about Scrimba based on the context provided. Try to find the answer in the context. If you
+really don't know the answer, say "I'm sorry, I don'E know the answer to that." And direct the
+questioner to email help@scrimba.com. Don't try to make up an answer. Always speak as if you were
+chatting to a friend.
+context: {context}
+question: {question}
+answer:
+`;
+const answerPrompt = PromptTemplate.fromTemplate(answerTemplate);
 
 /**
  * Challenge:
- * 1. Create a prompt to turn a user's question into a 
- *    standalone question. (Hint: the AI understands 
- *    the concept of a standalone question. You don't 
- *    need to explain it, just ask for it.)
- * 2. Create a chain with the prompt and the model.
- * 3. Invoke the chain remembering to pass in a question.
- * 4. Log out the response.
- * **/
+ * 1. Create a template and prompt to get an answer to 
+ *    the user's original question. Remember to include 
+ *    the original question and the text chunks we got 
+ *    back from the vector store as input variables. Call 
+ *    these input variables 'original_question' and 'context'.
+ * ⚠️ Feel free to add this to the chain, but you will get 
+ *    an error.
+ * 
+ * We want this chatbot to:
+ *  - be friendly
+ *  - only answer from the context provided and never make up 
+ *    answers
+ *  - apologise if it doesn't know the answer and advise the 
+ *    user to email help@scrimba.com
+*/
 
-// A string holding the phrasing of the prompt
-const standaloneQuestionTemplate = 'Given a question, convert it to a standalone question. Question: {questionText}, standalone question:';
+const chain = standaloneQuestionPrompt.pipe(llm).pipe(new StringOutputParser()).pipe(retriever).pipe(combineDocuments).pipe(answerPrompt);
 
-// A prompt created using PromptTemplate and the fromTemplate method
-const standaloneQuestionPrompt = PromptTemplate.fromTemplate(standaloneQuestionTemplate);
+const response = await chain.invoke({
+    question: 'What are the technical requirements for running Scrimba? I only have a very old laptop which is not that powerful.'
+})
 
-// Take the standaloneQuestionPrompt and PIPE the model
-const standaloneQuestionChain = standaloneQuestionPrompt.pipe(llm);
-
-// Await the response when you INVOKE the chain. 
-// Remember to pass in a question.
-const response = await standaloneQuestionChain.invoke({ questionText: 'Saya ini lapar sekali, apa aja sih menu yang kalian tawarkan?. Saya ingin makan segera, yang paling murah yah!' });
-
-console.log(response.content);
+console.log(response)
 
 async function progressConversation() {
     const userInput = document.getElementById('user-input')
