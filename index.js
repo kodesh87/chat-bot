@@ -11,7 +11,7 @@ import { RunnablePassthrough, RunnableSequence } from "langchain/schema/runnable
 // }) 
 
 const openAIApiKey = process.env.OPENAI_API_KEY
-const llm = new ChatOpenAI({ openAIApiKey })
+const llm = new ChatOpenAI({ modelName: 'gpt-3.5-turbo-1106', openAIApiKey, maxTokens: 3000})
 
 // standalone prompt template
 const standaloneQuestionTemplate = 'Given a question, convert it to a standalone question. question: {question} standalone question:'
@@ -70,7 +70,7 @@ const chain = RunnableSequence.from([
 // standaloneQuestionPrompt.pipe(llm).pipe(new StringOutputParser()).pipe(retriever).pipe(combineDocuments).pipe(answerPrompt);
 
 const response = await chain.invoke({
-    question: 'Saya ada 2 pertanyaan: (a) apa bagusnya Social VPS?; (b) berapa kecepatan Social VPS?; (c) dimana saja lokasi server yang tersedia?; (d) apakah bisa copy paste, caranya seperti apa?'
+    question: 'Saya ada 3 pertanyaan: (a) apa bagusnya Social VPS?; (b) berapa kecepatan Social VPS?; (c) dimana saja lokasi server yang tersedia?; (d) apakah bisa copy paste, caranya seperti apa?'
 })
 
 console.log(response)
